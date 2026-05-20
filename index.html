@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Zero - TRON Router Transfer</title>
+    <link rel="preconnect" href="https://static.tronscan.org" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar">
+        <a class="brand" href="./" aria-label="Energy Zero">
+          <span class="brand-mark">EZ</span>
+          <span>
+            <strong>Energy Zero</strong>
+            <small>TRON Router Transfer</small>
+          </span>
+        </a>
+        <div class="wallet-pill" id="walletPill">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="walletLabel">未连接钱包</span>
+        </div>
+      </nav>
+
+      <section class="hero-grid">
+        <aside class="savings-panel">
+          <div>
+            <div class="panel-kicker">SunSwap Subsidy</div>
+            <h1>更便宜</h1>
+            <p class="lead">
+              利用 SunSwap 补贴路径转账，自动对比平常转账和当前转账的成本。
+            </p>
+          </div>
+
+          <div class="saving-card">
+            <span>每笔预计少花</span>
+            <strong id="saveTrx">5.84 TRX</strong>
+            <small id="saveUsd">约 $2.08，借助 SunSwap 补贴路径估算</small>
+          </div>
+
+          <div class="metric-strip">
+            <div>
+              <span>平常转账</span>
+              <strong id="baselineEnergy">60,000</strong>
+              <small>energy</small>
+            </div>
+            <div>
+              <span>当前转账</span>
+              <strong id="routerEnergy">1,600</strong>
+              <small>energy</small>
+            </div>
+            <div>
+              <span>预计节省</span>
+              <strong id="savePercent">97.3%</strong>
+              <small>energy</small>
+            </div>
+          </div>
+        </aside>
+
+        <section class="transfer-panel" aria-labelledby="transferTitle">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Send Token</div>
+              <h2 id="transferTitle">选择代币转账</h2>
+            </div>
+            <button class="ghost-action compact" id="connectBtn" type="button">连接 TronLink</button>
+          </div>
+
+          <form id="transferForm" class="transfer-form">
+            <label class="field-group">
+              <span>Token</span>
+              <div class="token-select">
+                <button id="tokenButton" class="token-button" type="button" aria-haspopup="listbox">
+                  <span class="token-face" id="tokenFace">US</span>
+                  <span class="token-title">
+                    <strong id="tokenSymbol">USDT</strong>
+                    <small id="tokenName">Tether USD</small>
+                  </span>
+                  <span class="token-balance" id="selectedBalance">余额 --</span>
+                  <span class="chevron">⌄</span>
+                </button>
+                <div class="token-menu" id="tokenMenu" role="listbox" aria-label="选择 Token"></div>
+              </div>
+            </label>
+
+            <label class="field-group amount-field">
+              <span>数量</span>
+              <div class="amount-box">
+                <input id="amountInput" name="amount" inputmode="decimal" placeholder="0.00" />
+                <button id="maxBtn" class="text-action" type="button">MAX</button>
+              </div>
+            </label>
+
+            <label class="field-group">
+              <span>收款地址</span>
+              <input id="recipientInput" name="recipient" placeholder="T..." autocomplete="off" />
+            </label>
+
+            <div class="quote-panel">
+              <div>
+                <span>预计少花</span>
+                <strong id="inlineSave">5.84 TRX</strong>
+              </div>
+              <div>
+                <span>授权状态</span>
+                <strong id="allowanceState">连接后检测</strong>
+              </div>
+              <div>
+                <span>转账数量</span>
+                <strong id="totalPreview">0 USDT</strong>
+              </div>
+            </div>
+
+            <div class="approval-notice" id="approvalNotice" hidden>
+              <div>
+                <strong>需要授权指定金额</strong>
+                <p id="approvalDescription">授权前请核验合约地址。</p>
+              </div>
+              <div class="address-links">
+                <a id="permit2Link" target="_blank" rel="noreferrer">Permit2</a>
+                <a id="routerLink" target="_blank" rel="noreferrer">UniversalRouter</a>
+              </div>
+            </div>
+
+            <button class="primary-action full" id="primaryBtn" type="submit" disabled>
+              填写转账信息
+            </button>
+          </form>
+          <div class="message" id="messageBox" role="status" aria-live="polite"></div>
+        </section>
+      </section>
+
+    </main>
+
+    <div class="modal-backdrop" id="approvalModal" hidden>
+      <section class="approval-modal" role="dialog" aria-modal="true" aria-labelledby="approvalModalTitle">
+        <div class="modal-head">
+          <div>
+            <div class="panel-kicker">Approve Spending</div>
+            <h2 id="approvalModalTitle">确认授权</h2>
+          </div>
+          <button class="icon-action" id="closeApprovalModal" type="button" aria-label="关闭">×</button>
+        </div>
+
+        <div class="spender-list">
+          <div>
+            <span>TRC20 授权给 Permit2</span>
+            <a id="modalPermit2Link" target="_blank" rel="noreferrer"></a>
+          </div>
+          <div>
+            <span>Permit2 授权给 UniversalRouter</span>
+            <a id="modalRouterLink" target="_blank" rel="noreferrer"></a>
+          </div>
+        </div>
+
+        <label class="field-group">
+          <span>授权金额</span>
+          <div class="amount-box">
+            <input id="approvalAmountInput" inputmode="decimal" placeholder="0.00" />
+            <button id="approvalExactBtn" class="text-action" type="button">当前</button>
+          </div>
+        </label>
+
+        <p class="modal-note" id="approvalModalNote">
+          只会授权你输入的指定金额。确认后钱包可能依次弹出两笔授权签名。
+        </p>
+
+        <div class="modal-actions">
+          <button class="ghost-action" id="cancelApprovalBtn" type="button">取消</button>
+          <button class="primary-action" id="confirmApprovalBtn" type="button">确认授权</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="txModal" hidden>
+      <section class="approval-modal tx-modal" role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
+        <div class="modal-head tx-modal-head">
+          <div>
+            <h2 id="txModalTitle">转账成本查看</h2>
+          </div>
+          <button class="icon-action" id="closeTxModal" type="button" aria-label="关闭">×</button>
+        </div>
+
+        <div class="tx-summary">
+          <div class="tx-token-face" id="txTokenFace">US</div>
+          <div>
+            <span>本次转账</span>
+            <strong id="txAmountSummary">--</strong>
+            <small id="txSubsidySummary">预计少花 -- TRX</small>
+          </div>
+        </div>
+
+        <section class="tx-section">
+          <div class="cost-grid">
+            <div>
+              <span>平常转账</span>
+              <strong id="classicCostEstimate">-- TRX</strong>
+              <small><em id="classicEnergyEstimate">消耗 -- energy</em><em id="classicUserEstimate">用户 -- energy</em><em id="classicBandwidthEstimate">-- bandwidth</em></small>
+            </div>
+            <div class="resource-highlight">
+              <span>当前转账</span>
+              <strong id="currentCostEstimate">-- TRX</strong>
+              <small><em id="currentEnergyEstimate">消耗 -- energy</em><em id="currentUserEstimate">用户 -- energy</em><em id="currentBandwidthEstimate">-- bandwidth</em></small>
+            </div>
+            <div>
+              <span>预计节省</span>
+              <strong id="savedCostEstimate">-- TRX</strong>
+              <small><em id="savedEnergyEstimate">少承担 -- energy</em><em id="savedPercentEstimate">--</em><em id="savedBandwidthEstimate">-- bandwidth</em></small>
+            </div>
+          </div>
+        </section>
+
+        <div id="txDecodedTransfers" class="transfer-list compact-transfer-list"></div>
+
+        <section class="tx-section">
+          <dl class="decode-meta">
+            <div>
+              <dt>Router Contract</dt>
+              <dd>
+                <a id="txRouterLink" target="_blank" rel="noreferrer">--</a>
+              </dd>
+            </div>
+            <div>
+              <dt>Method</dt>
+              <dd id="txDecodedMethod">--</dd>
+            </div>
+            <div>
+              <dt>Command</dt>
+              <dd id="txDecodedCommand">--</dd>
+            </div>
+            <div>
+              <dt>Deadline</dt>
+              <dd id="txDecodedDeadline">--</dd>
+            </div>
+          </dl>
+        </section>
+
+        <p class="modal-note">
+          确认后会唤起钱包签名并提交转账。页面不会额外收取手续费。
+        </p>
+
+        <div class="modal-actions sticky-actions">
+          <button class="ghost-action" id="cancelTxBtn" type="button">取消</button>
+          <button class="primary-action" id="confirmTxBtn" type="button">确认转账</button>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

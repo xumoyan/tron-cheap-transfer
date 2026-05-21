@@ -1,7 +1,9 @@
 export const APP_CONFIG = {
   universalRouter: "TSJEtPuqHpvSaVnSwvCsngaeBxrGUzp95Q",
   permit2: "TTJxU3P8rHycAyFY4kVtGNfmnMH4ezcuM9",
+  sourceRepository: "https://github.com/xumoyan/tron-cheap-transfer",
   feeLimitSun: 50_000_000,
+  serviceFeeU: 0.1,
   tronscanBaseUrl: "https://tronscan.org/#",
   publicFullNodes: [
     "https://api.trongrid.io",
@@ -12,8 +14,8 @@ export const APP_CONFIG = {
   ],
   publicNodeTimeoutMs: 4500,
   energy: {
-    classicTransfer: 60_000,
-    routerTransfer: 1_600,
+    classicTransfer: 65_000,
+    routerTransfer: 100_000,
     classicBandwidth: 345,
     routerBandwidth: 620,
     classicUserPercent: 100,

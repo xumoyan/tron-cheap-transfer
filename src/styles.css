@@ -110,6 +110,9 @@ a:hover {
 .tx-summary span,
 .tx-summary strong,
 .tx-summary small,
+.user-cost-grid span,
+.user-cost-grid strong,
+.user-cost-grid small,
 .cost-grid span,
 .cost-grid strong,
 .cost-grid small,
@@ -130,7 +133,7 @@ a:hover {
 .token-option small,
 .token-option em,
 .quote-panel span,
-.decode-meta dt,
+.trust-grid span,
 .transfer-row span,
 .approval-notice p,
 .spender-list span,
@@ -138,6 +141,8 @@ a:hover {
 .raw-data-head span,
 .tx-summary span,
 .tx-summary small,
+.user-cost-grid span,
+.user-cost-grid small,
 .cost-grid span,
 .cost-grid small,
 .cost-grid em,
@@ -268,11 +273,12 @@ h2 {
 
 .saving-card small {
   color: #4e625b;
+  line-height: 1.5;
 }
 
 .metric-strip {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
@@ -453,7 +459,7 @@ input:focus,
 
 .quote-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 18px 0;
 }
@@ -489,6 +495,58 @@ input:focus,
 .approval-notice p {
   margin-top: 4px;
   line-height: 1.45;
+}
+
+.trust-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid rgba(10, 125, 114, 0.2);
+  border-radius: 8px;
+  background: #f0faf6;
+}
+
+.trust-panel strong,
+.trust-panel p,
+.trust-grid span,
+.trust-grid a {
+  display: block;
+}
+
+.trust-panel p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trust-grid > div {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.trust-grid span {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.trust-grid a {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.compact-trust-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .address-links {
@@ -660,7 +718,7 @@ button:disabled {
 
 .tx-modal .tx-summary,
 .tx-modal .tx-section,
-.tx-modal .transfer-list {
+.tx-modal > .transfer-list {
   margin: 12px 20px 0;
 }
 
@@ -717,6 +775,53 @@ button:disabled {
   margin-top: 4px;
 }
 
+.user-cost-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.user-cost-grid > div {
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.user-cost-grid .resource-highlight {
+  border-color: rgba(10, 125, 114, 0.28);
+  background: #effbf6;
+}
+
+.user-cost-grid strong {
+  margin: 6px 0;
+  font-size: 1.36rem;
+  overflow-wrap: anywhere;
+}
+
+.tx-savings-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #101a17;
+  color: #fff;
+}
+
+.tx-savings-line strong,
+.tx-savings-line span {
+  font-weight: 900;
+}
+
+.tx-savings-line span {
+  color: #b7f0dc;
+  white-space: nowrap;
+}
+
 .cost-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -753,33 +858,10 @@ button:disabled {
   color: #8a9993;
 }
 
-.decode-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 0;
-}
-
-.decode-meta > div,
 .transfer-row {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--soft);
-}
-
-.decode-meta > div {
-  padding: 10px;
-}
-
-.decode-meta dt {
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.decode-meta dd {
-  margin: 6px 0 0;
-  overflow-wrap: anywhere;
-  font-weight: 800;
 }
 
 .transfer-list {
@@ -895,7 +977,10 @@ pre {
   }
 
   .quote-panel,
-  .decode-meta,
+  .metric-strip,
+  .user-cost-grid,
+  .trust-grid,
+  .compact-trust-grid,
   .transfer-row,
   .cost-grid {
     grid-template-columns: 1fr;
@@ -914,7 +999,8 @@ pre {
   .modal-head,
   .modal-actions,
   .raw-data-head,
-  .tx-section-head {
+  .tx-section-head,
+  .tx-savings-line {
     align-items: stretch;
     flex-direction: column;
   }
@@ -926,7 +1012,7 @@ pre {
 
   .tx-summary,
   .tx-section,
-  .transfer-list,
+  .tx-modal > .transfer-list,
   .modal-note {
     margin-left: 14px;
     margin-right: 14px;

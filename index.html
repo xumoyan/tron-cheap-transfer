@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Energy Zero - TRON Router Transfer</title>
+    <title>Energy Zero - TRON 低能量转 U</title>
     <link rel="preconnect" href="https://static.tronscan.org" />
-    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="stylesheet" href="./src/styles.css?v=20260521b" />
   </head>
   <body>
     <main class="shell">
@@ -14,7 +14,7 @@
           <span class="brand-mark">EZ</span>
           <span>
             <strong>Energy Zero</strong>
-            <small>TRON Router Transfer</small>
+            <small>TRON 低能量转账</small>
           </span>
         </a>
         <div class="wallet-pill" id="walletPill">
@@ -26,34 +26,40 @@
       <section class="hero-grid">
         <aside class="savings-panel">
           <div>
-            <div class="panel-kicker">SunSwap Subsidy</div>
-            <h1>更便宜</h1>
+            <div class="panel-kicker">低能量转 U</div>
+            <h1>转 U 用户能量省 40 倍+</h1>
             <p class="lead">
-              利用 SunSwap 补贴路径转账，自动对比平常转账和当前转账的成本。
+              协议封装转账操作，让你只承担约 1% 能量。普通转 U 用户通常要承担约
+              65,000 Energy，当前路径约 1,000 Energy 即可完成。
             </p>
           </div>
 
           <div class="saving-card">
-            <span>每笔预计少花</span>
-            <strong id="saveTrx">5.84 TRX</strong>
-            <small id="saveUsd">约 $2.08，借助 SunSwap 补贴路径估算</small>
+            <span>你实际承担的 Energy</span>
+            <strong id="heroUserEnergy">约 1,000</strong>
+            <small id="heroEnergySummary">普通路径约 65,000 Energy，当前路径约 1,000 Energy</small>
           </div>
 
           <div class="metric-strip">
             <div>
-              <span>平常转账</span>
-              <strong id="baselineEnergy">60,000</strong>
-              <small>energy</small>
+              <span>普通转 U</span>
+              <strong id="baselineEnergy">65,000</strong>
+              <small>用户 Energy</small>
             </div>
             <div>
-              <span>当前转账</span>
-              <strong id="routerEnergy">1,600</strong>
-              <small>energy</small>
+              <span>协议封装</span>
+              <strong id="routerEnergy">1,000</strong>
+              <small>用户 Energy</small>
             </div>
             <div>
-              <span>预计节省</span>
-              <strong id="savePercent">97.3%</strong>
-              <small>energy</small>
+              <span>能量承担</span>
+              <strong id="savePercent">1%</strong>
+              <small>用户承担比例</small>
+            </div>
+            <div>
+              <span>固定服务费</span>
+              <strong id="serviceFeeHero">0.1 U</strong>
+              <small>每笔</small>
             </div>
           </div>
         </aside>
@@ -61,8 +67,8 @@
         <section class="transfer-panel" aria-labelledby="transferTitle">
           <div class="panel-head">
             <div>
-              <div class="panel-kicker">Send Token</div>
-              <h2 id="transferTitle">选择代币转账</h2>
+              <div class="panel-kicker">低能量转账</div>
+              <h2 id="transferTitle">发送转账</h2>
             </div>
             <button class="ghost-action compact" id="connectBtn" type="button">连接 TronLink</button>
           </div>
@@ -99,8 +105,12 @@
 
             <div class="quote-panel">
               <div>
-                <span>预计少花</span>
-                <strong id="inlineSave">5.84 TRX</strong>
+                <span>你承担 Energy</span>
+                <strong id="inlineUserEnergy">约 1,000</strong>
+              </div>
+              <div>
+                <span>固定服务费</span>
+                <strong id="protocolFeePreview">0.1 U / 笔</strong>
               </div>
               <div>
                 <span>授权状态</span>
@@ -122,6 +132,31 @@
                 <a id="routerLink" target="_blank" rel="noreferrer">UniversalRouter</a>
               </div>
             </div>
+
+            <section class="trust-panel" aria-label="公开核验">
+              <div>
+                <strong>公开核验</strong>
+                <p>转账、授权和前端源码都可以先核对，再确认。</p>
+              </div>
+              <div class="trust-grid">
+                <div>
+                  <span>当前 Token 合约</span>
+                  <a id="verifyTokenLink" target="_blank" rel="noreferrer">--</a>
+                </div>
+                <div>
+                  <span>Permit2 地址</span>
+                  <a id="verifyPermit2Link" target="_blank" rel="noreferrer">--</a>
+                </div>
+                <div>
+                  <span>UniversalRouter 地址</span>
+                  <a id="verifyRouterLink" target="_blank" rel="noreferrer">--</a>
+                </div>
+                <div>
+                  <span>开源项目地址</span>
+                  <a id="sourceRepoLink" target="_blank" rel="noreferrer">xumoyan/tron-cheap-transfer</a>
+                </div>
+              </div>
+            </section>
 
             <button class="primary-action full" id="primaryBtn" type="submit" disabled>
               填写转账信息
@@ -177,7 +212,8 @@
       <section class="approval-modal tx-modal" role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
         <div class="modal-head tx-modal-head">
           <div>
-            <h2 id="txModalTitle">转账成本查看</h2>
+            <h2 id="txModalTitle">确认低能量转账</h2>
+            <p>先核对到账信息和你承担的成本，再唤起钱包签名。</p>
           </div>
           <button class="icon-action" id="closeTxModal" type="button" aria-label="关闭">×</button>
         </div>
@@ -187,57 +223,101 @@
           <div>
             <span>本次转账</span>
             <strong id="txAmountSummary">--</strong>
-            <small id="txSubsidySummary">预计少花 -- TRX</small>
+            <small id="txSubsidySummary">普通路径约 -- Energy，当前路径约 -- Energy</small>
           </div>
         </div>
 
         <section class="tx-section">
+          <div class="tx-section-head">
+            <div>
+              <span>你需要关心的成本</span>
+              <strong>先看实际承担，再看底层估算</strong>
+            </div>
+          </div>
+          <div class="user-cost-grid">
+            <div>
+              <span>普通转账</span>
+              <strong id="txClassicUserEnergy">-- Energy</strong>
+              <small>用户承担</small>
+            </div>
+            <div class="resource-highlight">
+              <span>协议封装</span>
+              <strong id="txRouterUserEnergy">-- Energy</strong>
+              <small id="txUserShare">用户承担 --</small>
+            </div>
+            <div>
+              <span>固定服务费</span>
+              <strong id="txServiceFee">0.1 U</strong>
+              <small>每笔</small>
+            </div>
+          </div>
+          <p class="tx-savings-line">
+            本次预计少承担 <strong id="txSavedEnergyValue">-- Energy</strong>
+            <span id="txEnergyMultiple">约省 -- 倍</span>
+          </p>
+        </section>
+
+        <section class="tx-section">
+          <div class="tx-section-head">
+            <div>
+              <span>链上资源估算</span>
+              <strong>用户承担与底层消耗分开看</strong>
+            </div>
+          </div>
           <div class="cost-grid">
             <div>
-              <span>平常转账</span>
+              <span>普通路径</span>
               <strong id="classicCostEstimate">-- TRX</strong>
               <small><em id="classicEnergyEstimate">消耗 -- energy</em><em id="classicUserEstimate">用户 -- energy</em><em id="classicBandwidthEstimate">-- bandwidth</em></small>
             </div>
             <div class="resource-highlight">
-              <span>当前转账</span>
+              <span>协议路径</span>
               <strong id="currentCostEstimate">-- TRX</strong>
               <small><em id="currentEnergyEstimate">消耗 -- energy</em><em id="currentUserEstimate">用户 -- energy</em><em id="currentBandwidthEstimate">-- bandwidth</em></small>
             </div>
             <div>
-              <span>预计节省</span>
+              <span>资源差额</span>
               <strong id="savedCostEstimate">-- TRX</strong>
               <small><em id="savedEnergyEstimate">少承担 -- energy</em><em id="savedPercentEstimate">--</em><em id="savedBandwidthEstimate">-- bandwidth</em></small>
             </div>
           </div>
         </section>
 
-        <div id="txDecodedTransfers" class="transfer-list compact-transfer-list"></div>
+        <section class="tx-section transfer-review">
+          <div class="tx-section-head">
+            <div>
+              <span>转账核对</span>
+              <strong>到账信息</strong>
+            </div>
+          </div>
+          <div id="txDecodedTransfers" class="transfer-list compact-transfer-list"></div>
+        </section>
 
         <section class="tx-section">
-          <dl class="decode-meta">
+          <div class="tx-section-head">
             <div>
-              <dt>Router Contract</dt>
-              <dd>
-                <a id="txRouterLink" target="_blank" rel="noreferrer">--</a>
-              </dd>
+              <span>公开核验</span>
+              <strong>合约地址与源码</strong>
+            </div>
+          </div>
+          <div class="trust-grid compact-trust-grid">
+            <div>
+              <span>Permit2 地址</span>
+              <a id="txPermit2Link" target="_blank" rel="noreferrer">--</a>
             </div>
             <div>
-              <dt>Method</dt>
-              <dd id="txDecodedMethod">--</dd>
+              <span>UniversalRouter 地址</span>
+              <a id="txRouterLink" target="_blank" rel="noreferrer">--</a>
             </div>
             <div>
-              <dt>Command</dt>
-              <dd id="txDecodedCommand">--</dd>
+              <span>开源项目地址</span>
+              <a id="txSourceRepoLink" target="_blank" rel="noreferrer">xumoyan/tron-cheap-transfer</a>
             </div>
-            <div>
-              <dt>Deadline</dt>
-              <dd id="txDecodedDeadline">--</dd>
-            </div>
-          </dl>
+          </div>
         </section>
 
         <p class="modal-note">
-          确认后会唤起钱包签名并提交转账。页面不会额外收取手续费。
+          确认后会唤起钱包签名并提交转账。协议固定服务费为 0.1 U/笔，钱包侧仍会显示链上资源消耗。
         </p>
 
         <div class="modal-actions sticky-actions">
@@ -247,6 +327,6 @@
       </section>
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=20260521b"></script>
   </body>
 </html>

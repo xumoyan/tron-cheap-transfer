@@ -3,7 +3,6 @@ import {
   approvePermit2,
   broadcastRouterTransfer,
   buildRouterTransfer,
-  calculateSavings,
   connectTronLink,
   estimateTransferResources,
   formatUnits,
@@ -50,12 +49,17 @@ const els = {
   primaryBtn: document.querySelector("#primaryBtn"),
   transferForm: document.querySelector("#transferForm"),
   totalPreview: document.querySelector("#totalPreview"),
-  inlineSave: document.querySelector("#inlineSave"),
+  inlineUserEnergy: document.querySelector("#inlineUserEnergy"),
+  protocolFeePreview: document.querySelector("#protocolFeePreview"),
   allowanceState: document.querySelector("#allowanceState"),
   approvalNotice: document.querySelector("#approvalNotice"),
   approvalDescription: document.querySelector("#approvalDescription"),
   permit2Link: document.querySelector("#permit2Link"),
   routerLink: document.querySelector("#routerLink"),
+  verifyTokenLink: document.querySelector("#verifyTokenLink"),
+  verifyPermit2Link: document.querySelector("#verifyPermit2Link"),
+  verifyRouterLink: document.querySelector("#verifyRouterLink"),
+  sourceRepoLink: document.querySelector("#sourceRepoLink"),
   approvalModal: document.querySelector("#approvalModal"),
   closeApprovalModal: document.querySelector("#closeApprovalModal"),
   cancelApprovalBtn: document.querySelector("#cancelApprovalBtn"),
@@ -72,6 +76,12 @@ const els = {
   txTokenFace: document.querySelector("#txTokenFace"),
   txAmountSummary: document.querySelector("#txAmountSummary"),
   txSubsidySummary: document.querySelector("#txSubsidySummary"),
+  txClassicUserEnergy: document.querySelector("#txClassicUserEnergy"),
+  txRouterUserEnergy: document.querySelector("#txRouterUserEnergy"),
+  txUserShare: document.querySelector("#txUserShare"),
+  txSavedEnergyValue: document.querySelector("#txSavedEnergyValue"),
+  txEnergyMultiple: document.querySelector("#txEnergyMultiple"),
+  txServiceFee: document.querySelector("#txServiceFee"),
   classicCostEstimate: document.querySelector("#classicCostEstimate"),
   classicEnergyEstimate: document.querySelector("#classicEnergyEstimate"),
   classicUserEstimate: document.querySelector("#classicUserEstimate"),
@@ -84,17 +94,17 @@ const els = {
   savedPercentEstimate: document.querySelector("#savedPercentEstimate"),
   savedBandwidthEstimate: document.querySelector("#savedBandwidthEstimate"),
   savedCostEstimate: document.querySelector("#savedCostEstimate"),
+  txPermit2Link: document.querySelector("#txPermit2Link"),
   txRouterLink: document.querySelector("#txRouterLink"),
-  txDecodedMethod: document.querySelector("#txDecodedMethod"),
-  txDecodedCommand: document.querySelector("#txDecodedCommand"),
-  txDecodedDeadline: document.querySelector("#txDecodedDeadline"),
+  txSourceRepoLink: document.querySelector("#txSourceRepoLink"),
   txDecodedTransfers: document.querySelector("#txDecodedTransfers"),
   messageBox: document.querySelector("#messageBox"),
   baselineEnergy: document.querySelector("#baselineEnergy"),
   routerEnergy: document.querySelector("#routerEnergy"),
   savePercent: document.querySelector("#savePercent"),
-  saveUsd: document.querySelector("#saveUsd"),
-  saveTrx: document.querySelector("#saveTrx")
+  heroUserEnergy: document.querySelector("#heroUserEnergy"),
+  heroEnergySummary: document.querySelector("#heroEnergySummary"),
+  serviceFeeHero: document.querySelector("#serviceFeeHero")
 };
 
 init();
@@ -125,12 +135,20 @@ function init() {
 
   els.permit2Link.href = tronscanAddressUrl(APP_CONFIG.permit2);
   els.routerLink.href = tronscanAddressUrl(APP_CONFIG.universalRouter);
+  els.verifyPermit2Link.href = tronscanAddressUrl(APP_CONFIG.permit2);
+  els.verifyPermit2Link.textContent = APP_CONFIG.permit2;
+  els.verifyRouterLink.href = tronscanAddressUrl(APP_CONFIG.universalRouter);
+  els.verifyRouterLink.textContent = APP_CONFIG.universalRouter;
+  els.sourceRepoLink.href = APP_CONFIG.sourceRepository;
   els.modalPermit2Link.href = tronscanAddressUrl(APP_CONFIG.permit2);
   els.modalPermit2Link.textContent = APP_CONFIG.permit2;
   els.modalRouterLink.href = tronscanAddressUrl(APP_CONFIG.universalRouter);
   els.modalRouterLink.textContent = APP_CONFIG.universalRouter;
+  els.txPermit2Link.href = tronscanAddressUrl(APP_CONFIG.permit2);
+  els.txPermit2Link.textContent = APP_CONFIG.permit2;
   els.txRouterLink.href = tronscanAddressUrl(APP_CONFIG.universalRouter);
   els.txRouterLink.textContent = APP_CONFIG.universalRouter;
+  els.txSourceRepoLink.href = APP_CONFIG.sourceRepository;
 
   if (window.tronWeb?.defaultAddress?.base58) {
     state.account = window.tronWeb.defaultAddress.base58;
@@ -140,14 +158,18 @@ function init() {
 }
 
 function renderEnergy() {
-  const savings = calculateSavings();
-  const currentUserEnergy = Math.ceil(APP_CONFIG.energy.routerTransfer * APP_CONFIG.energy.routerUserPercent / 100);
-  els.baselineEnergy.textContent = APP_CONFIG.energy.classicTransfer.toLocaleString();
-  els.routerEnergy.textContent = currentUserEnergy.toLocaleString();
-  els.savePercent.textContent = `${savings.percent.toFixed(2)}%`;
-  els.saveUsd.textContent = `约 $${savings.savedUsd.toFixed(2)}，按 1% 补贴后承担估算`;
-  els.saveTrx.textContent = `${savings.savedTrx.toFixed(2)} TRX`;
-  els.inlineSave.textContent = `${savings.savedTrx.toFixed(2)} TRX`;
+  const claim = fallbackResourceEstimate();
+  const fee = formatServiceFee();
+  els.baselineEnergy.textContent = formatNumber(claim.classic.userEnergy);
+  els.routerEnergy.textContent = formatNumber(claim.router.userEnergy);
+  els.savePercent.textContent = formatPercent(claim.router.userPercent);
+  els.heroUserEnergy.textContent = `约 ${formatNumber(claim.router.userEnergy)}`;
+  els.heroEnergySummary.textContent =
+    `普通路径约 ${formatNumber(claim.classic.userEnergy)} Energy，当前路径约 ${formatNumber(claim.router.userEnergy)} Energy`;
+  els.inlineUserEnergy.textContent = `约 ${formatNumber(claim.router.userEnergy)}`;
+  els.protocolFeePreview.textContent = `${fee} U / 笔`;
+  els.serviceFeeHero.textContent = `${fee} U`;
+  els.txServiceFee.textContent = `${fee} U`;
 }
 
 function renderTokens() {
@@ -184,6 +206,8 @@ function renderSelectedToken() {
   els.tokenName.textContent = token.name;
   els.selectedBalance.textContent = `余额 ${formatBalance(token)}`;
   els.tokenFace.innerHTML = token.logoURI ? `<img src="${token.logoURI}" alt="" />` : token.symbol.slice(0, 2);
+  els.verifyTokenLink.href = tronscanAddressUrl(token.address);
+  els.verifyTokenLink.textContent = token.address;
 }
 
 async function connect() {
@@ -311,7 +335,7 @@ function updatePreview() {
     return;
   }
 
-  setPrimary("send", "转账", false);
+  setPrimary("send", "查看并确认转账", false);
   els.allowanceState.textContent = "已授权";
 }
 
@@ -467,31 +491,29 @@ function closeTxModalFromBackdrop(event) {
 
 function renderTxDecodedData(decoded) {
   const transfer = decoded.transfers[0];
-  const savings = calculateSavings();
+  const claim = fallbackResourceEstimate();
   els.txTokenFace.innerHTML = state.token.logoURI ? `<img src="${state.token.logoURI}" alt="" />` : state.token.symbol.slice(0, 2);
   els.txAmountSummary.textContent = transfer?.amountText || `${formatUnits(state.amount, state.token.decimals)} ${state.token.symbol}`;
-  els.txSubsidySummary.textContent = `预计通过 SunSwap 补贴少花约 ${savings.savedTrx.toFixed(2)} TRX`;
-  els.txDecodedMethod.textContent = decoded.method;
-  els.txDecodedCommand.textContent = decoded.command;
-  els.txDecodedDeadline.textContent = formatDeadline(decoded.deadline);
+  els.txSubsidySummary.textContent =
+    `普通路径约 ${formatNumber(claim.classic.userEnergy)} Energy，当前路径约 ${formatNumber(claim.router.userEnergy)} Energy`;
   els.txDecodedTransfers.innerHTML = decoded.transfers
     .map((transfer) => {
       return `
         <div class="transfer-row">
           <div>
-            <span>From</span>
+            <span>发送地址</span>
             <a href="${tronscanAddressUrl(transfer.from)}" target="_blank" rel="noreferrer">${transfer.from}</a>
           </div>
           <div>
-            <span>To</span>
+            <span>收款地址</span>
             <a href="${tronscanAddressUrl(transfer.to)}" target="_blank" rel="noreferrer">${transfer.to}</a>
           </div>
           <div>
-            <span>Token</span>
-            <a href="${tronscanAddressUrl(transfer.token)}" target="_blank" rel="noreferrer">${state.token.symbol} · ${transfer.token}</a>
+            <span>Token 合约</span>
+            <a href="${tronscanAddressUrl(transfer.token)}" target="_blank" rel="noreferrer">${transfer.token}</a>
           </div>
           <div>
-            <span>Amount</span>
+            <span>到账数量</span>
             <strong>${transfer.amountText}</strong>
           </div>
         </div>
@@ -514,6 +536,11 @@ function renderResourceEstimate(estimate, loading = false) {
     els.savedEnergyEstimate.textContent = "少承担 -- energy";
     els.savedPercentEstimate.textContent = "--";
     els.savedBandwidthEstimate.textContent = "-- bandwidth";
+    els.txClassicUserEnergy.textContent = "-- Energy";
+    els.txRouterUserEnergy.textContent = "-- Energy";
+    els.txUserShare.textContent = "用户承担 --";
+    els.txSavedEnergyValue.textContent = "-- Energy";
+    els.txEnergyMultiple.textContent = "约省 -- 倍";
     return;
   }
 
@@ -530,7 +557,12 @@ function renderResourceEstimate(estimate, loading = false) {
   els.savedEnergyEstimate.textContent = `少承担 ${formatNumber(data.saved.energy)} energy`;
   els.savedPercentEstimate.textContent = `节省 ${formatPercent(getSavedPercent(data))}`;
   els.savedBandwidthEstimate.textContent = `${formatNumber(data.saved.bandwidth)} bandwidth`;
-  els.txSubsidySummary.textContent = `预计少花 ${formatSun(data.saved.sun)} TRX`;
+  els.txClassicUserEnergy.textContent = `${formatNumber(data.classic.userEnergy)} Energy`;
+  els.txRouterUserEnergy.textContent = `${formatNumber(data.router.userEnergy)} Energy`;
+  els.txUserShare.textContent = `用户承担 ${formatPercent(data.router.userPercent)}`;
+  els.txSavedEnergyValue.textContent = `${formatNumber(data.saved.energy)} Energy`;
+  els.txEnergyMultiple.textContent = `约省 ${formatEnergyMultiple(getUserEnergyMultiple(data))}`;
+  els.txSubsidySummary.textContent = `用户预计少承担 ${formatNumber(data.saved.energy)} Energy`;
 }
 
 function fallbackResourceEstimate() {
@@ -614,13 +646,25 @@ function formatSun(value) {
   return (Number(value || 0) / 1_000_000).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
 }
 
+function formatServiceFee() {
+  return Number(APP_CONFIG.serviceFeeU || 0).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+}
+
 function getSavedPercent(data) {
   if (!data?.classic?.totalSun) return 0;
   return (data.saved.sun / data.classic.totalSun) * 100;
 }
 
-function formatDeadline(deadline) {
-  return new Date(Number(deadline) * 1000).toLocaleString();
+function getUserEnergyMultiple(data) {
+  if (!data?.classic?.userEnergy || !data?.router?.userEnergy) return 0;
+  return data.classic.userEnergy / data.router.userEnergy;
+}
+
+function formatEnergyMultiple(value) {
+  const multiple = Number(value || 0);
+  if (!multiple) return "-- 倍";
+  if (multiple >= 10) return `${Math.floor(multiple)} 倍`;
+  return `${multiple.toFixed(1).replace(/\.0$/, "")} 倍`;
 }
 
 async function copyCalldata() {
